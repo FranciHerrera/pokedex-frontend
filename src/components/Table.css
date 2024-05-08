@@ -1,5 +1,17 @@
+body {
+    background-image: url('src/assets/Flood-Background_2.png'); 
+    background-size: cover;
+    background-position: center;
+    height: 100vh; 
+    margin: 0;
+    padding: 0;
+}
 .table-container {
     display: flex;
     justify-content: center;
     padding: 20px;
 }  
+h1{
+    display: flex;
+    justify-content: center;
+}

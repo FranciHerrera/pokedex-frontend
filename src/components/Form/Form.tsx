@@ -1,52 +1,152 @@
-import { useState, useEffect } from "react"
-import "./Form.css"
+import { useState, useEffect } from "react";
+import "./Form.css";
 import Data from "./Data";
 
-function Form (){
-    const [email, setEmail] = useState<string>("");
-    const [passwd, setPasswd] = useState<string>("");
-    const [showData, setShowData] = useState<boolean>(false);
+const API_URL = "http://localhost:3000/";
 
-    const loginData = {
-        email: "franxbox6@gmail.com",
-        passwd: "1234"
-    }
-    
-    //curried function
-    const handleInputChange = (stateUpdate: any) => {
-        return (event: any) => {
-            stateUpdate(event.target.value);
-        }
-    }
+function Form() {
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [showData, setShowData] = useState<boolean>(false);
+  const [user, setUser] = useState<any>(null);
+  const [speciesData, setSpeciesData] = useState<any[]>([]);
 
-    const handleOnClick = () => {
-        if(showData){
-            setEmail("");
-            setPasswd("");
-        }
-        if(email === loginData.email && passwd == loginData.passwd){
-            alert("Bienvenido")
-        }
-        else{
-            alert("Datos incorrectos")
-        }
-        //toggleflag
-        //setShowData(!showData);
+  useEffect(() => {
+    const userInStorageString = window.localStorage.getItem("user");
+    const userInStorage = JSON.parse(userInStorageString);
+    setUser(userInStorage);
+  }, []);
+
+  const loginData = {
+    email: "fran@example.com",
+    passwd: "1234",
+  };
+
+  //curried function
+  const handleInputChange = (stateUpdate: any) => {
+    return (event: any) => {
+      stateUpdate(event.target.value);
+    };
+  };
+
+  const handleOnClick = () => {
+    logIn({ email, password });
+    fetchSpecies();
+  };
+
+  const logIn = async ({
+    email,
+    password,
+  }: {
+    email: String;
+    password: String;
+  }) => {
+    try {
+      const response = await fetch(`${API_URL}api/v1/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+      if (response.status == 200) {
+        const data = await response.json();
+        setUser(data);
+        window.localStorage.setItem("user", JSON.stringify(data));
+        alert("Bienvenido");
+      } else {
+        alert("Usuario o contraseña incorrectos");
+      }
+      const data = await response.json();
+      console.log(data);
+    } catch (error) {
+      console.error(error);
     }
-    return(
+  };
+
+  // const fetchSpecies = async () => {
+  //   try {
+  //     const response = await fetch(`${API_URL}api/v1/species/`, {
+  //       headers: {
+  //         Authorization: `Bearer ${user.token}`,
+  //       },
+  //     });
+  //     const data = await response.json();
+  //     console.log(data);
+  //   } catch (error) {}
+  // };
+  const fetchSpecies = async () => {
+    try {
+      const response = await fetch(`${API_URL}api/v1/species/`, {
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+      });
+      if (response.status === 200) {
+        const data = await response.json();
+        setSpeciesData(data);
+      } else {
+        console.error("Error al recuperar las especies");
+      }
+    } catch (error) {
+      console.error("Error al procesar la solicitud:", error);
+    }
+  };
+
+  return (
     <>
-    <Data passwd={passwd} email={email} showData={showData} />
-    <div className="form-group">
+      {/* {user && (
+        <section className="dataContainer">
+          {
+            <>
+              <p>Email: {user.user.email}</p>
+              <p>Nombre: {user.user.name}</p>
+              <p>Id: {user.user.id}</p>
+            </>
+          }
+        </section>
+      )} */}
+      <div className="form-group">
         <label htmlFor="email">Email</label>
-        <input type="email" id="email" name="email" className="form-control" placeholder="Ingresa email" value={email} onChange={handleInputChange(setEmail)} />
-    </div>
-    <div className="form-group">
+        <input
+          type="email"
+          id="email"
+          name="email"
+          className="form-control"
+          placeholder="Ingresa email"
+          value={email}
+          onChange={handleInputChange(setEmail)}
+        />
+      </div>
+      <div className="form-group">
         <label htmlFor="password">Contraseña</label>
-        <input type="password" id="password" name="password" className="form-control" placeholder="Ingresa contraseña" value={passwd} onChange={handleInputChange(setPasswd)} />
-    </div>
-    <button className="btn btn-primary" onClick={handleOnClick}>Ingresar</button>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          className="form-control"
+          placeholder="Ingresa contraseña"
+          value={password}
+          onChange={handleInputChange(setPassword)}
+        />
+      </div>
+      <button className="btn btn-primary" onClick={handleOnClick}>
+        Ingresar
+      </button>
+      {speciesData.length > 0 && (
+        <section className="speciesContainer">
+          <h2>Datos de las especies:</h2>
+          {speciesData.map((species, index) => (
+            <div key={index}>
+              <p>Nombre: {species.name}</p>
+              <p>Descripcion: {species.description}</p>
+              {/* Otros datos de la especie si es necesario */}
+            </div>
+          ))}
+        </section>
+      )}
     </>
-    )
+  );
 }
 
-export default Form
+export default Form;

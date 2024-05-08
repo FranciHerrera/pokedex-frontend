@@ -17,7 +17,8 @@ const Table = () => {
   }, []);
 
   return (
-    <div className="container">
+    <div className="container p-3 my-3 text-white">
+      <h1>Formas Flood</h1>
       <table className="table table-dark table-hover">
         <thead>
           <tr>
